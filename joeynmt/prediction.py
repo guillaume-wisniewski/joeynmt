@@ -98,6 +98,7 @@ def validate_on_data(model: Model, data: Dataset,
     with torch.no_grad():
         all_outputs = []
         valid_attention_scores = []
+        all_representations = []
         total_loss = 0
         total_ntokens = 0
         total_nseqs = 0
@@ -119,13 +120,18 @@ def validate_on_data(model: Model, data: Dataset,
                 total_nseqs += batch.nseqs
 
             # run as during inference to produce translations
-            output, attention_scores = run_batch(
+            output, attention_scores, hidden_state = run_batch(
                 model=model, batch=batch, beam_size=beam_size,
                 beam_alpha=beam_alpha, max_output_length=max_output_length,
                 n_best=n_best)
 
             # sort outputs back to original order
             all_outputs.extend(output[sort_reverse_index])
+
+            # XXX still have to re-order the batch
+            all_representations.append({"sort_reverse_index": sort_reverse_index,
+                                        "hidden_state": hidden_state})
+
             valid_attention_scores.extend(
                 attention_scores[sort_reverse_index]
                 if attention_scores is not None else [])
@@ -184,7 +190,7 @@ def validate_on_data(model: Model, data: Dataset,
 
     return current_valid_score, valid_loss, valid_ppl, valid_sources, \
         valid_sources_raw, valid_references, valid_hypotheses, \
-        decoded_valid, valid_attention_scores
+        decoded_valid, valid_attention_scores, all_representations
 
 
 def parse_test_args(cfg, mode="test"):
@@ -410,14 +416,14 @@ def translate(cfg_file: str,
         """ Translates given dataset, using parameters from outer scope. """
         # pylint: disable=unused-variable
         score, loss, ppl, sources, sources_raw, references, hypotheses, \
-        hypotheses_raw, attention_scores = validate_on_data(
+        hypotheses_raw, attention_scores, representations = validate_on_data(
             model, data=test_data, batch_size=batch_size,
             batch_class=batch_class, batch_type=batch_type, level=level,
             max_output_length=max_output_length, eval_metric="",
             use_cuda=use_cuda, compute_loss=False, beam_size=beam_size,
             beam_alpha=beam_alpha, postprocess=postprocess,
             bpe_type=bpe_type, sacrebleu=sacrebleu, n_gpu=n_gpu, n_best=n_best)
-        return hypotheses
+        return hypotheses, representations
 
     cfg = load_config(cfg_file)
     model_dir = cfg["training"]["model_dir"]
@@ -466,7 +472,7 @@ def translate(cfg_file: str,
     if not sys.stdin.isatty():
         # input file given
         test_data = MonoDataset(path=sys.stdin, ext="", field=src_field)
-        all_hypotheses = _translate_data(test_data)
+        all_hypotheses, all_repr = _translate_data(test_data)
 
         if output_path is not None:
             # write to outputfile if given
@@ -491,6 +497,10 @@ def translate(cfg_file: str,
                     )
             else:
                 write_to_file("{}".format(output_path), all_hypotheses)
+
+                import pickle
+                with open(output_path + ".representations.pkl", "wb") as ofile:
+                    pickle.dump(all_repr, ofile)
         else:
             # print to stdout
             for hyp in all_hypotheses:

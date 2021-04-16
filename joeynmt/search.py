@@ -454,4 +454,4 @@ def run_batch(model: Model, batch: Batch, max_output_length: int,
             alpha=beam_alpha,
             n_best=n_best)
 
-    return stacked_output, stacked_attention_scores
+    return stacked_output, stacked_attention_scores, encoder_hidden

@@ -218,9 +218,16 @@ class TransformerEncoder(Encoder):
         x = self.pe(embed_src)  # add position encoding to word embeddings
         x = self.emb_dropout(x)
 
-        for layer in self.layers:
+        hidden_info = []
+
+        for layer_id, layer in enumerate(self.layers):
             x = layer(x, mask)
-        return self.layer_norm(x), None
+
+            hidden_info.append({"layer_id": layer_id,
+                                "output": x,
+                                "output_mask": mask})
+
+        return self.layer_norm(x), hidden_info
 
     def __repr__(self):
         return "%s(num_layers=%r, num_heads=%r)" % (
