@@ -10,7 +10,6 @@ Output:
 - each sentence is a list of tuples (word, word representation)
 
 Todo:
-- test what happens when the number of sentences is larger than a batch size
 - extract the representation for all the layers?
 """
 
@@ -29,7 +28,9 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("--representations", required=True, type=argparse.FileType("rb"))
 parser.add_argument("--input_sentences", required=True, type=argparse.FileType("r"))
-parser.add_argument("--layer", default=-1, type=int)
+parser.add_argument("--layer", default=-1, type=int,
+                    help="select the encoder layer on which the representation should be extracted"\
+                    " (as a python index --> -1 for the last one, 0 for the first)")
 parser.add_argument("--output", required=True, type=argparse.FileType("wb"))
 args = parser.parse_args()
 
