@@ -35,8 +35,8 @@ parser.add_argument("--output", required=True, type=argparse.FileType("wb"))
 args = parser.parse_args()
 
 n_sentences = 0
+all_representations = []
 for batch in pickle.load(args.representations):
-
     sort_reverse_index = batch['sort_reverse_index']
     hidden_state = batch["hidden_state"][args.layer]
 
@@ -47,7 +47,7 @@ for batch in pickle.load(args.representations):
     output = hidden_state["output"]
     mask = hidden_state["output_mask"]
 
-    # all values in paddind dimensions are set to 0
+    # all values in padding dimensions are set to 0
     #
     # XXX not sure why we have to transpose the mask here. Maybe, this
     # allows to make the mask independant of the dimensions of the
@@ -61,7 +61,6 @@ for batch in pickle.load(args.representations):
     masked_output = masked_output[sort_reverse_index,:,:]
 
     # extract the representation
-    all_representations = []
     for i in range(masked_output.shape[0]):
         n_sentences += 1
         input_sentence = next(args.input_sentences)
@@ -69,11 +68,10 @@ for batch in pickle.load(args.representations):
 
         o = masked_output[i, :, :]
         sentence_representation = o[o.sum(dim=1) != 0,:]
-
-        assert len(input_sentence) == sentence_representation.shape[0]
+        assert len(input_sentence) == sentence_representation.shape[0], f"{len(input_sentence)} vs {sentence_representation.shape[0]}"
 
         all_representations.append(list(zip(input_sentence, sentence_representation)))
 
-    pickle.dump(all_representations, args.output)
+pickle.dump(all_representations, args.output)
 
 print(f"extracted the representation of {n_sentences:,} sentences")
