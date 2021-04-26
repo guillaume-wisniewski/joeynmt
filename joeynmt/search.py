@@ -434,6 +434,14 @@ def run_batch(model: Model, batch: Batch, max_output_length: int,
     if max_output_length is None:
         max_output_length = int(max(batch.src_length.cpu().numpy()) * 1.5)
 
+    print(encoder_output.shape)
+    import pickle
+    new_repr = pickle.load(open("son_representation.pkl", "rb"))
+    print(new_repr.shape)
+    # ... terminé son travail .    <eos>
+    # ... -5      -4   -3     -2    -1
+    encoder_output[:,-4,:] = new_repr
+    
     # greedy decoding
     if beam_size < 2:
         stacked_output, stacked_attention_scores = greedy(
