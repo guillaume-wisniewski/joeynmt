@@ -4,3 +4,8 @@ dist/*
 *.egg-info/*
 docs/build/*
 *__pycache__*
+
+taln2021_models/
+taln2021_results/
+local
+models
