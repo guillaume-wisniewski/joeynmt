@@ -227,6 +227,9 @@ class TransformerEncoder(Encoder):
                                 "output": x,
                                 "output_mask": mask})
 
+        hidden_info.append({"layer_id": "after_normalization",
+                            "output": self.layer_norm(x),
+                            "output_mask": mask})
         return self.layer_norm(x), hidden_info
 
     def __repr__(self):
