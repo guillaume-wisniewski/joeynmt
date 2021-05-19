@@ -435,14 +435,14 @@ def run_batch(model: Model, batch: Batch, max_output_length: int,
         max_output_length = int(max(batch.src_length.cpu().numpy()) * 1.5)
 
     import pickle
-    #new_repr = pickle.load(open("average_son.pkl", "rb"))
+    new_repr = pickle.load(open("average_son.pkl", "rb"))
     #new_repr = pickle.load(open("female_son.pkl", "rb"))
-    new_repr = pickle.load(open("male_son.pkl", "rb"))
+    #new_repr = pickle.load(open("male_son.pkl", "rb"))
     print(f"size of the new representation {new_repr.shape}")
     # ... terminé son travail .    <eos>
     # ... -5      -4   -3     -2    -1
     print(f"batch size before intervention {encoder_output.shape}")
-    encoder_output[:, 5,:] = Tensor(new_repr)
+    encoder_output[:, 8,:] = Tensor(new_repr)
     print(f"batch size after intervention {encoder_output.shape}")
 
     # greedy decoding
