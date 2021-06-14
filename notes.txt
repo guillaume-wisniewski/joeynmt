@@ -22,7 +22,7 @@ To get the sentence representations, you must first translate your corpus:
 where:
 
 - JOEYNMT_CONFIG the filename containing the JoeyNMT's configuration;
-- OUTPUT_PREFIX the filename in which the representations will be stored (with the extension XXX);
+- OUTPUT_PREFIX the filename in which the representations will be stored (with the extension `.representations.pkl`);
 - CORPUS is the corpus containing source sentences (one sentence per line).
 
 Other way to translate a corpus might work but have not been tested yet.
