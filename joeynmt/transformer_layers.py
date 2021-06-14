@@ -74,6 +74,7 @@ class MultiHeadedAttention(nn.Module):
 
         # apply attention dropout and compute context vectors.
         attention = self.softmax(scores)
+        attention_scores = attention.clone().detach()
         attention = self.dropout(attention)
 
         # get context vector (select values with attention) and reshape
@@ -84,7 +85,7 @@ class MultiHeadedAttention(nn.Module):
 
         output = self.output_layer(context)
 
-        return output
+        return output, attention_scores
 
 
 # pylint: disable=arguments-differ
@@ -200,10 +201,11 @@ class TransformerEncoderLayer(nn.Module):
         :return: output tensor
         """
         x_norm = self.layer_norm(x)
-        h = self.src_src_att(x_norm, x_norm, x_norm, mask)
+        h, attention_scores = self.src_src_att(x_norm, x_norm, x_norm, mask)
         h = self.dropout(h) + x
         o = self.feed_forward(h)
-        return o
+
+        return o, attention_scores
 
 
 class TransformerDecoderLayer(nn.Module):
@@ -261,12 +263,12 @@ class TransformerDecoderLayer(nn.Module):
         """
         # decoder/target self-attention
         x_norm = self.x_layer_norm(x)
-        h1 = self.trg_trg_att(x_norm, x_norm, x_norm, mask=trg_mask)
+        h1, _ = self.trg_trg_att(x_norm, x_norm, x_norm, mask=trg_mask)
         h1 = self.dropout(h1) + x
 
         # source-target attention
         h1_norm = self.dec_layer_norm(h1)
-        h2 = self.src_trg_att(memory, memory, h1_norm, mask=src_mask)
+        h2, _ = self.src_trg_att(memory, memory, h1_norm, mask=src_mask)
 
         # final position-wise feed-forward layer
         o = self.feed_forward(self.dropout(h2) + h1)

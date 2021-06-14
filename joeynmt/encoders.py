@@ -221,15 +221,18 @@ class TransformerEncoder(Encoder):
         hidden_info = []
 
         for layer_id, layer in enumerate(self.layers):
-            x = layer(x, mask)
+            x, self_attn = layer(x, mask)
 
             hidden_info.append({"layer_id": layer_id,
                                 "output": x,
+                                "self_attn": self_attn,
                                 "output_mask": mask})
 
         hidden_info.append({"layer_id": "after_normalization",
                             "output": self.layer_norm(x),
+                            "self_attn": None,
                             "output_mask": mask})
+
         return self.layer_norm(x), hidden_info
 
     def __repr__(self):
