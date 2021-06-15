@@ -1,7 +1,21 @@
+"""
+Input: representations of French sentences extracted by `extract_representations.py`
+Output: Three representations of the `son` token 
+- a representation averaged over all tokens
+- the representation of son in the first sentence (translation correctly predicted: ▁the ▁captain ▁has ▁completed ▁his ▁work ▁.)
+- the representation of son in the 4-th sentnce (translation correctly predicted: 
+
+"""
+import argparse
 import pickle
 import numpy as np
 
-data = pickle.load(open("fra.representations.pkl", "rb"))
+parser = argparse.ArgumentParser()
+parser.add_argument("--repr", required=True, type=argparse.FileType("rb"))
+
+args = parser.parse_args()
+
+data = pickle.load(args.repr)
 
 
 all_son_representations = []

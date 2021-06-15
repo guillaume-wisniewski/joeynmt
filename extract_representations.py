@@ -46,7 +46,8 @@ parser.add_argument("--representations", required=True, type=argparse.FileType("
 parser.add_argument("--input_sentences", required=True, type=argparse.FileType("r"))
 parser.add_argument("--layer", default=-1, type=int,
                     help="select the encoder layer on which the representation should be extracted"\
-                    " (as a python index --> -1 for the last one, 0 for the first)")
+                    " (as a python index --> -1 for the last one, 0 for the first)"\
+                    " layer index goes from 0 to n_layers + one additional layer for the representations after normalisation")
 parser.add_argument("--repr_output", required=True, type=argparse.FileType("wb"))
 parser.add_argument("--attn_output", required=True, type=lambda x: Path(x))
 args = parser.parse_args()
@@ -57,7 +58,7 @@ all_self_attentions = []
 for batch in pickle.load(args.representations):
     sort_reverse_index = batch['sort_reverse_index']
     hidden_state = batch["hidden_state"][args.layer]
-
+    
     if n_sentences == 0:
         print(f"extracting representation from the {hidden_state['layer_id']}-th layer")
 
